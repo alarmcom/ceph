@@ -734,3 +734,18 @@ Message *decode_message(CephContext *cct, bufferlist::iterator& p)
   return decode_message(cct, h, f, fr, mi, da);
 }
 
+  Connection *Connection::get() {
+    if (msgr)
+      lgeneric_subdout(msgr->cct, ms, 0) << "Connection(" << this << ")::get "
+					 << nref.read() << " -> " << (nref.read() + 1)
+					 << dendl;
+    return static_cast<Connection *>(RefCountedObject::get());
+  }
+void Connection::put() {
+    if (msgr)
+      lgeneric_subdout(msgr->cct, ms, 0) << "Connection(" << this << ")::put "
+					 << nref.read() << " -> " << (nref.read() - 1)
+					 << dendl;
+    RefCountedObject::put();
+  }
+

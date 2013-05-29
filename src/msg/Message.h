@@ -193,9 +193,8 @@ public:
       pipe->put();
   }
 
-  Connection *get() {
-    return static_cast<Connection *>(RefCountedObject::get());
-  }
+  Connection *get();
+  void put();
 
   void set_priv(RefCountedObject *o) {
     Mutex::Locker l(lock);
