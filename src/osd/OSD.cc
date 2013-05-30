@@ -2383,16 +2383,17 @@ void OSD::maybe_update_heartbeat_peers()
 
   // too few?
   int start = osdmap->get_next_up_osd_after(whoami);
-  for (int n = start;
-       (int)heartbeat_peers.size() < g_conf->osd_heartbeat_min_peers;
-       n = osdmap->get_next_up_osd_after(n)) {
-    if (n == start || n < 0)
+  for (int n = start; n >= 0; ) {
+    if ((int)heartbeat_peers.size() >= g_conf->osd_heartbeat_min_peers)
+      break;
+    if (!extras.count(n) && !want.count(n) && n != whoami) {
+      dout(10) << " adding random peer osd." << n << dendl;
+      extras.insert(n);
+      _add_heartbeat_peer(n);
+    }
+    n = osdmap->get_next_up_osd_after(n);
+    if (n == start)
       break;  // came full circle; stop
-    if (extras.count(n) || want.count(n) || n == whoami)
-      continue;
-    dout(10) << " adding random peer osd." << n << dendl;
-    extras.insert(n);
-    _add_heartbeat_peer(n);
   }
 
   // too many?
